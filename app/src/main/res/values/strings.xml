@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">template03</string>
+
+
+    <!--common-->
+    <string name="OK">OK</string>
+    <string name="CANCEL">CANCEL</string>
+
+    <!--dialog title-->
+    <string name="dialog_title1">title1</string>
+
+    <!--error msg-->
+    <string name="error_msg1">エラーmsg</string>
+    <string name="error_msg2">エラーmsg2</string>
+
+    <!--sucess msg-->
+
+
+    <!--commnet-->
+
+
+    <!--other-->
+
+</resources>
