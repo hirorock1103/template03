@@ -1,20 +1,30 @@
 <resources>
-    <string name="app_name">template03</string>
+    <string name="app_name">ライザップ風目標管理</string>
 
 
     <!--common-->
     <string name="OK">OK</string>
     <string name="CANCEL">CANCEL</string>
+    <string name="goal">goal describe what you want</string>
+    <string name="bt_comment1">基準の項目を作成</string>
+    <string name="bt_comment2">別日で記録を作成する</string>
 
     <!--dialog title-->
-    <string name="dialog_title1">title1</string>
+    <string name="dialog_title1">削除Dialog</string>
+    <string name="dialog_title2">Add Goal</string>
+
+    <!--button name-->
+    <string name="button_name1">目標list</string>
+    <string name="button_name2">目標登録</string>
 
     <!--error msg-->
-    <string name="error_msg1">エラーmsg</string>
-    <string name="error_msg2">エラーmsg2</string>
+    <string name="error_msg1">タイトルは必須項目です</string>
+    <string name="error_msg2">削除に必要な情報が不足しています</string>
+    <string name="error_msg3">データがありません。</string>
 
     <!--sucess msg-->
-
+    <string name="success_msg1">登録完了</string>
+    <string name="success_msg2">削除しました</string>
 
     <!--commnet-->
 
