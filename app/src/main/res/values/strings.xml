@@ -6,12 +6,22 @@
     <string name="OK">OK</string>
     <string name="CANCEL">CANCEL</string>
     <string name="goal">goal describe what you want</string>
+    <string name="measure_basic">目標測定値タイトル</string>
+    <string name="int_value">int</string>
+    <string name="int_image">image</string>
     <string name="bt_comment1">基準の項目を作成</string>
     <string name="bt_comment2">別日で記録を作成する</string>
+    <string name="comment1">測定する値の種類を選択</string>
+    <string name="comment2">画像による管理の場合画像を登録</string>
+    <string name="comment3">測定日</string>
+    <string name="comment5"></string>
+    <string name="comment6">測定する値:</string>
 
     <!--dialog title-->
     <string name="dialog_title1">削除Dialog</string>
     <string name="dialog_title2">Add Goal</string>
+    <string name="dialog_title3">目標測定値の設定</string>
+    <string name="dialog_title4">実績値の入力</string>
 
     <!--button name-->
     <string name="button_name1">目標list</string>
@@ -20,7 +30,12 @@
     <!--error msg-->
     <string name="error_msg1">タイトルは必須項目です</string>
     <string name="error_msg2">削除に必要な情報が不足しています</string>
-    <string name="error_msg3">データがありません。</string>
+    <string name="error_msg3">データがありません</string>
+    <string name="error_msg4">測定タイトルは必須です</string>
+    <string name="error_msg5">goalIdの取得に失敗しました</string>
+    <string name="error_msg6">intかimageの選択は必須です</string>
+    <string name="error_msg7">測定日は必須です</string>
+    <string name="error_msg8">測定値が数値の場合、value(数値)の入力は必須です</string>
 
     <!--sucess msg-->
     <string name="success_msg1">登録完了</string>

@@ -87,6 +87,51 @@ public class Common {
     }
 
 
+    public static Date getDateByStr(String str, String pattern){
+
+        Date newDate = null;
+
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+
+        try {
+            newDate = sdf.parse(str);
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return newDate;
+
+    }
+
+
+    public static Date addDateFromTargetDate(String targetDate, String pattern, String target, int value){
+
+        //str to date
+        Date newDate = getDateByStr(targetDate, pattern);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(newDate);
+
+        switch (target){
+            case "MONTH":
+                calendar.add(Calendar.MONTH, value);
+                break;
+            case "YEAR":
+                calendar.add(Calendar.YEAR, value);
+                break;
+            case "DAY":
+                calendar.add(Calendar.DATE, value);
+                break;
+        }
+
+        Date date = calendar.getTime();
+
+        return date;
+
+    }
+
+
     /**
      * log
      */

@@ -5,6 +5,7 @@ public class Goal {
     private int goalId;
     private String goalTitle;
     private String goalExpiredDate;
+    private String goalMeasureDate;
     private String createdate;
     private String updatedate;
 
@@ -47,5 +48,13 @@ public class Goal {
 
     public void setUpdatedate(String updatedate) {
         this.updatedate = updatedate;
+    }
+
+    public String getGoalMeasureDate() {
+        return goalMeasureDate;
+    }
+
+    public void setGoalMeasureDate(String goalMeasureDate) {
+        this.goalMeasureDate = goalMeasureDate;
     }
 }
