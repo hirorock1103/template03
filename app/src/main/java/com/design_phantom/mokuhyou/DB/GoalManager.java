@@ -36,6 +36,7 @@ public class GoalManager extends MyDbHelper {
             goal.setGoalTitle(c.getString(c.getColumnIndex(GOAL_COLUMN_TITLE)));
             goal.setGoalExpiredDate(c.getString(c.getColumnIndex(GOAL_COLUMN_EXPIRED_DATE)));
             goal.setGoalMeasureDate(c.getString(c.getColumnIndex(GOAL_COLUMN_MEASURE_DATE)));
+            goal.setGoalDate(c.getString(c.getColumnIndex(GOAL_COLUMN_GOAL_DATE)));
             goal.setCreatedate(c.getString(c.getColumnIndex(GOAL_COLUMN_CREATEDATE)));
             goal.setUpdatedate(c.getString(c.getColumnIndex(GOAL_COLUMN_UPDATEDATE)));
 
@@ -64,6 +65,7 @@ public class GoalManager extends MyDbHelper {
             goal.setGoalTitle(c.getString(c.getColumnIndex(GOAL_COLUMN_TITLE)));
             goal.setGoalExpiredDate(c.getString(c.getColumnIndex(GOAL_COLUMN_EXPIRED_DATE)));
             goal.setGoalMeasureDate(c.getString(c.getColumnIndex(GOAL_COLUMN_MEASURE_DATE)));
+            goal.setGoalDate(c.getString(c.getColumnIndex(GOAL_COLUMN_GOAL_DATE)));
             goal.setCreatedate(c.getString(c.getColumnIndex(GOAL_COLUMN_CREATEDATE)));
             goal.setUpdatedate(c.getString(c.getColumnIndex(GOAL_COLUMN_UPDATEDATE)));
 
@@ -84,7 +86,8 @@ public class GoalManager extends MyDbHelper {
         ContentValues values = new ContentValues();
         values.put(GOAL_COLUMN_TITLE,goal.getGoalTitle());
         values.put(GOAL_COLUMN_EXPIRED_DATE,goal.getGoalExpiredDate());
-        values.put(GOAL_COLUMN_MEASURE_DATE,goal.getGoalMeasureDate());
+        values.put(GOAL_COLUMN_MEASURE_DATE,goal.getGoalDate());
+        values.put(GOAL_COLUMN_GOAL_DATE,goal.getGoalMeasureDate());
         values.put(GOAL_COLUMN_UPDATEDATE, Common.formatDate(new Date(),Common.DB_DATE_FORMAT));
         values.put(GOAL_COLUMN_CREATEDATE,Common.formatDate(new Date(),Common.DB_DATE_FORMAT));
 
@@ -107,6 +110,7 @@ public class GoalManager extends MyDbHelper {
         values.put(GOAL_COLUMN_TITLE,goal.getGoalTitle());
         values.put(GOAL_COLUMN_EXPIRED_DATE,goal.getGoalExpiredDate());
         values.put(GOAL_COLUMN_MEASURE_DATE,goal.getGoalMeasureDate());
+        values.put(GOAL_COLUMN_GOAL_DATE,goal.getGoalDate());
         values.put(GOAL_COLUMN_UPDATEDATE, Common.formatDate(new Date(),Common.DB_DATE_FORMAT));
 
         SQLiteDatabase db = getWritableDatabase();

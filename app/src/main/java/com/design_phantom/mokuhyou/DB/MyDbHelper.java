@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class MyDbHelper extends SQLiteOpenHelper {
 
-    private final static int DBVERSION = 4;
+    private final static int DBVERSION = 5;
     private final static String DBNAME = "Mokuhyou.db";
 
     protected final static String TABLE_NAME = "Member";
@@ -21,6 +21,7 @@ public class MyDbHelper extends SQLiteOpenHelper {
     protected final static String GOAL_COLUMN_TITLE = "goal_title";
     protected final static String GOAL_COLUMN_EXPIRED_DATE = "goal_expired_date";
     protected final static String GOAL_COLUMN_MEASURE_DATE = "goal_measure_date";
+    protected final static String GOAL_COLUMN_GOAL_DATE = "goal_date";
     protected final static String GOAL_COLUMN_CREATEDATE = "goal_createdate";
     protected final static String GOAL_COLUMN_UPDATEDATE = "goal_updatedate";
 
@@ -67,6 +68,7 @@ public class MyDbHelper extends SQLiteOpenHelper {
                 GOAL_COLUMN_TITLE + " text ," +
                 GOAL_COLUMN_EXPIRED_DATE + " text," +
                 GOAL_COLUMN_MEASURE_DATE + " text," +
+                GOAL_COLUMN_GOAL_DATE + " text," +
                 GOAL_COLUMN_CREATEDATE + " text," +
                 GOAL_COLUMN_UPDATEDATE + " text" +
                 ")" ;

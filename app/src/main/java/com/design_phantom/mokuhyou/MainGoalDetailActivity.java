@@ -4,7 +4,11 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.LinearGradient;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -23,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -64,16 +69,18 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
     private TextView title;
     private TextView startDate;
     private TextView targetDate;
+    private TextView goalDateStr;
     private ScrollView leftScroll;
     private ScrollView rightScroll;
     private LinearLayout leftScrollContents;
     private LinearLayout rightScrollContents;
 
     //view button
+    private ImageButton playmovie;
     private ImageView icNext;
     private ImageView icBefore;
     private LinearLayout createBasic;
-    private LinearLayout createNewRecord;
+    private LinearLayout createGoal;
 
 
     @Override
@@ -89,6 +96,7 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
         title = findViewById(R.id.title);
         startDate = findViewById(R.id.start_date);
         targetDate = findViewById(R.id.target_date);
+        goalDateStr = findViewById(R.id.goal_date_str);
         leftScroll = findViewById(R.id.left_scroll);
         rightScroll = findViewById(R.id.right_scroll);
         leftScrollContents = findViewById(R.id.left_scroll_contents);
@@ -96,7 +104,8 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
         icNext = findViewById(R.id.ic_next);
         icBefore = findViewById(R.id.ic_before);
         createBasic = findViewById(R.id.create_basic);
-        createNewRecord = findViewById(R.id.create_new_record);
+        createGoal = findViewById(R.id.create_new_record);
+        playmovie = findViewById(R.id.playmovie);
 
 
         leftScroll.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
@@ -138,11 +147,27 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
         icNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Snackbar.make(v, "next", Snackbar.LENGTH_SHORT).show();
+
                 Date nextDate = Common.addDateFromTargetDate(targetDate.getText().toString(), Common.DATE_FORMAT_SAMPLE_1, "DAY", 1);
-                targetDate.setText(Common.formatDate(nextDate, Common.DATE_FORMAT_SAMPLE_1));
-                setScrollViewData();
-                Snackbar.make(v, "--change next date", Snackbar.LENGTH_SHORT).show();
+
+                Goal goal = goalManager.getListById(goalId);
+                String goalDate = goal.getGoalDate();
+                if(goalDate != null && goalDate.isEmpty() == false){
+                    Date goalDateDate = Common.getDateByStr(goalDate, Common.DATE_FORMAT_SAMPLE_1);
+                    if(nextDate.getTime() > goalDateDate.getTime()){
+                        Snackbar.make(v, "--You cant over goaldate", Snackbar.LENGTH_SHORT).show();
+                    }else{
+                        targetDate.setText(Common.formatDate(nextDate, Common.DATE_FORMAT_SAMPLE_1));
+                        setScrollViewData();
+                        Snackbar.make(v, "--change next date", Snackbar.LENGTH_SHORT).show();
+                    }
+                }else{
+                    targetDate.setText(Common.formatDate(nextDate, Common.DATE_FORMAT_SAMPLE_1));
+                    setScrollViewData();
+                    Snackbar.make(v, "--change next date", Snackbar.LENGTH_SHORT).show();
+                }
+
+
             }
         });
         createBasic.setOnClickListener(new View.OnClickListener() {
@@ -157,11 +182,15 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
                 basicMeasure.show(getSupportFragmentManager(), "dialog");
             }
         });
-        createNewRecord.setOnClickListener(new View.OnClickListener() {
+        createGoal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Snackbar.make(v, "createNewRecord", Snackbar.LENGTH_SHORT).show();
-
+                DatePickDialog datePickDialog = new DatePickDialog();
+                Bundle bundle = new Bundle();
+                bundle.putString("target", "goalDate");
+                datePickDialog.setArguments(bundle);
+                datePickDialog.show(getSupportFragmentManager(), "dateDialog");
             }
         });
 
@@ -187,6 +216,14 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
             }
         });
 
+        playmovie.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //start movie with picture
+                //SequenceEncoder encoder =
+            }
+        });
+
     }
 
 
@@ -200,6 +237,40 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
 
         leftScrollContents.removeAllViews();
         rightScrollContents.removeAllViews();
+
+        TransitionDrawable transitionDrawableStart = new TransitionDrawable(new Drawable[]{
+                new ColorDrawable(Color.BLACK),
+                getResources().getDrawable(R.drawable.startline)
+        });
+
+        TransitionDrawable transitionDrawableGoal = new TransitionDrawable(new Drawable[]{
+                new ColorDrawable(Color.BLACK),
+                getResources().getDrawable(R.drawable.goal)
+        });
+
+        leftScrollContents.setBackground(transitionDrawableStart);
+        rightScrollContents.setBackground(transitionDrawableGoal);
+
+        transitionDrawableGoal.startTransition(700);
+        transitionDrawableStart.startTransition(700);
+
+        //goal日の設定
+        Goal goal = goalManager.getListById(goalId);
+        String goalDate = goal.getGoalDate();
+        if(goalDate != null && goalDate.isEmpty() == false){
+            goalDateStr.setText(goalDate);
+            if(goalDate.equals(targetDate.getText().toString())){
+                Common.log("Today is Goal Date!");
+                //rightScroll.setBackgroundColor(Color.parseColor("#000000"));
+            }else{
+                Common.log("Today is not Goal Date!");
+                //rightScroll.setBackgroundColor(Color.parseColor("#eeeeee"));
+            }
+        }else{
+            Common.log("Today is not Goal Date!");
+            goalDateStr.setText("--");
+            //rightScroll.setBackgroundColor(Color.parseColor("#eeeeee"));
+        }
 
         List<GoalMeasure> list = goalManager.getMeasureByGoalId(goalId);
         final GoalMeasure[] measures = list.toArray(new GoalMeasure[list.size()]);
@@ -505,9 +576,14 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
     @Override
     public void datePickResultNotice(String dateStr, String target) {
 
+        Common.log(target);
+
         if(target != null && target.isEmpty() == false){
 
             View view = findViewById(android.R.id.content);
+            GoalManager goalManager = new GoalManager(getApplicationContext());
+            String goalDate;
+            Date goalDatedate;
 
             switch (target){
 
@@ -515,17 +591,34 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
 
                     Date start1 = Common.getDateByStr(dateStr, Common.DATE_FORMAT_SAMPLE_1);
                     startDate.setText(Common.formatDate(start1, Common.DATE_FORMAT_SAMPLE_1));
-
+                    //set goal to the goal
+                    Goal goal1 = goalManager.getListById(goalId);
+                    goal1.setGoalMeasureDate(dateStr);
+                    long result1 = goalManager.updateGoal(goal1);
+                    if(result1 > 0){
+                        //setScrollViewData();
+                        Snackbar.make(view, "--datePickResultNotice Change date -- start is setted", Snackbar.LENGTH_SHORT).show();
+                    }else{
+                        Snackbar.make(view, "--datePickResultNotice Change date -- start is failed", Snackbar.LENGTH_SHORT).show();
+                    }
                     break;
 
                 case "targetDate":
                     //Snackbar.make(v, "before", Snackbar.LENGTH_SHORT).show();
-                    Date nextDate = Common.addDateFromTargetDate(dateStr, Common.DATE_FORMAT_SAMPLE_1, "DAY", -1);
-                    //check if nextDate is bellow startdate
+                    Date nextDate = Common.getDateByStr(dateStr, Common.DATE_FORMAT_SAMPLE_1);
+                    //Date nextDate = Common.addDateFromTargetDate(dateStr, Common.DATE_FORMAT_SAMPLE_1, "DAY", -1);
+                    Date nextDateAdd = Common.addDateFromTargetDate(dateStr, Common.DATE_FORMAT_SAMPLE_1, "DAY", 1);
+
                     Date start2 = Common.getDateByStr(startDate.getText().toString(), Common.DATE_FORMAT_SAMPLE_1);
+
+                    Goal goal3 = goalManager.getListById(goalId);
+                    goalDate = goal3.getGoalDate();
+                    goalDatedate = Common.getDateByStr(goalDate, Common.DATE_FORMAT_SAMPLE_1);
 
                     if(start2.getTime() > nextDate.getTime()) {
                         Snackbar.make(view, "--error nextDate is bellow startdate not allowed", Snackbar.LENGTH_SHORT).show();
+                    }else if(nextDateAdd.getTime() > goalDatedate.getTime()){
+                        Snackbar.make(view, "--error nextDate is over goalDate not allowed", Snackbar.LENGTH_SHORT).show();
                     }else{
                         targetDate.setText(dateStr);
                         setScrollViewData();
@@ -533,12 +626,32 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
                     }
                     break;
 
+                case "goalDate":
+
+                    goalDatedate = Common.addDateFromTargetDate(dateStr, Common.DATE_FORMAT_SAMPLE_1, "DAY", -1);
+                    Date start3 = Common.getDateByStr(startDate.getText().toString(), Common.DATE_FORMAT_SAMPLE_1);
+
+                    if(start3.getTime() > goalDatedate.getTime()) {
+                        Snackbar.make(view, "--error goalDate is bellow startdate not allowed", Snackbar.LENGTH_SHORT).show();
+                    }else{
+                        targetDate.setText(dateStr);//as goal
+                        //set goal to the goal
+                        Goal goal2 = goalManager.getListById(goalId);
+                        goal2.setGoalDate(dateStr);
+                        long result2 = goalManager.updateGoal(goal2);
+                        if(result2 > 0){
+                            setScrollViewData();
+                            Snackbar.make(view, "--datePickResultNotice Change date -- goal is setted", Snackbar.LENGTH_SHORT).show();
+                        }else{
+                            Snackbar.make(view, "--datePickResultNotice Change date -- goal is failed", Snackbar.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    break;
+
             }
 
-
         }
-
-
 
     }
 
