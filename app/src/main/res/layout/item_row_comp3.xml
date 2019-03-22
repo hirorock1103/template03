@@ -59,7 +59,7 @@
 
             <ImageView
                 android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_height="100dp"
                 android:id="@+id/image_value"
                 android:src="@mipmap/ic_add_2"
                 app:layout_constraintTop_toBottomOf="@id/int_value"

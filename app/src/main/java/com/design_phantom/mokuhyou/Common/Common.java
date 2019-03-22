@@ -1,6 +1,7 @@
 package com.design_phantom.mokuhyou.Common;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -275,6 +276,17 @@ public class Common {
 
     }
 
-
+    public static String convertUrlFromDrawableResId(Context context, int drawableResId) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(ContentResolver.SCHEME_ANDROID_RESOURCE);
+        sb.append("://");
+        sb.append(context.getResources().getResourcePackageName(drawableResId));
+        sb.append("/");
+        sb.append(context.getResources().getResourceTypeName(drawableResId));
+        sb.append("/");
+        sb.append(context.getResources().getResourceEntryName(drawableResId));
+        return sb.toString();
+        // Uriに変換したい時は Uri.parse(sb.toString())
+    }
 }
 

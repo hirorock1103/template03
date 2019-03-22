@@ -43,11 +43,18 @@ import com.design_phantom.mokuhyou.Master.Goal;
 import com.design_phantom.mokuhyou.Master.GoalMeasure;
 import com.design_phantom.mokuhyou.Master.MeasureHistory;
 
+import org.jcodec.api.SequenceEncoder;
+import org.jcodec.api.android.AndroidSequenceEncoder;
+import org.jcodec.common.io.NIOUtils;
+import org.jcodec.common.model.Rational;
+
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Date;
 import java.util.List;
 
@@ -220,7 +227,8 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
             @Override
             public void onClick(View v) {
                 //start movie with picture
-                //SequenceEncoder encoder =
+
+
             }
         });
 
@@ -240,12 +248,12 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
 
         TransitionDrawable transitionDrawableStart = new TransitionDrawable(new Drawable[]{
                 new ColorDrawable(Color.BLACK),
-                getResources().getDrawable(R.drawable.startline)
+                getResources().getDrawable(R.drawable.background1)
         });
 
         TransitionDrawable transitionDrawableGoal = new TransitionDrawable(new Drawable[]{
                 new ColorDrawable(Color.BLACK),
-                getResources().getDrawable(R.drawable.goal)
+                getResources().getDrawable(R.drawable.background2)
         });
 
         leftScrollContents.setBackground(transitionDrawableStart);
@@ -260,14 +268,14 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
         if(goalDate != null && goalDate.isEmpty() == false){
             goalDateStr.setText(goalDate);
             if(goalDate.equals(targetDate.getText().toString())){
-                Common.log("Today is Goal Date!");
+                //Common.log("Today is Goal Date!");
                 //rightScroll.setBackgroundColor(Color.parseColor("#000000"));
             }else{
-                Common.log("Today is not Goal Date!");
+                //Common.log("Today is not Goal Date!");
                 //rightScroll.setBackgroundColor(Color.parseColor("#eeeeee"));
             }
         }else{
-            Common.log("Today is not Goal Date!");
+            //Common.log("Today is not Goal Date!");
             goalDateStr.setText("--");
             //rightScroll.setBackgroundColor(Color.parseColor("#eeeeee"));
         }
@@ -291,12 +299,15 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
                 //Common.log("image:" + tmpImg.length);
                 if(tmpImg != null && tmpImg.length > 0){
                     imageval.setImageBitmap(BitmapFactory.decodeByteArray(tmpImg, 0, tmpImg.length));
-
                 }
 
             }else if(measures[i].getMeasureType().equals("int")){
                 intval.setText(String.valueOf(measures[i].getMeasureIntValue()));
                 intUnitName.setText(measures[i].getIntUnitName());
+                int WC = LinearLayout.LayoutParams.WRAP_CONTENT;
+                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(WC,WC);
+                imageval.setLayoutParams(params);
+
             }
             leftScrollContents.addView(view);
 
@@ -367,6 +378,11 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
                         trend.setImageBitmap(BitmapFactory.decodeResource(getResources(), resorceId));
                         setValue.setText(String.valueOf(history.getMeasureIntValue()));
                         historyIntValueUnitName.setText(measures[i].getIntUnitName());
+
+                        int WC = LinearLayout.LayoutParams.WRAP_CONTENT;
+                        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(WC,WC);
+                        imageValue.setLayoutParams(params);
+
                         break;
 
                     case "image":

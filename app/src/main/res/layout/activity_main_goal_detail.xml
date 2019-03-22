@@ -37,15 +37,24 @@
         app:layout_constraintTop_toBottomOf="@id/head_area"
         >
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/goal_date_str"
-            android:gravity="center_horizontal"
-            android:text="2019/09/22"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="8dp"
-            />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Goal"
+                android:id="@+id/goal_title"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="8dp"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/goal_date_str"
+                android:text="2019/09/22"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="8dp"
+                />
 
     </LinearLayout>
 
