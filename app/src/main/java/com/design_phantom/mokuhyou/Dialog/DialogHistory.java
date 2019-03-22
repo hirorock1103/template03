@@ -4,10 +4,17 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -19,18 +26,27 @@ import com.design_phantom.mokuhyou.Master.GoalMeasure;
 import com.design_phantom.mokuhyou.Master.MeasureHistory;
 import com.design_phantom.mokuhyou.R;
 
+import java.io.File;
 import java.util.List;
 
 public class DialogHistory extends AppCompatDialogFragment {
 
+    public final static int RESULT_CAMERA_FROM_FRAGMENT = 1001;
+    public final static int RESULT_PICK_IMAGE_FROM_FRAGMENT = 1002;
+
     private int measureId;
     private String targetMeasureDate;
+    private int historyId;
+
     private String type;
     private byte[] imageByte;
     //view
     private TextView measureTitle;
     private TextView measureDate;
     private TextView typeName;
+    private TextView intValUnitName;
+    private Button btTakePic;
+    private Button btFindFile;
     private ImageView image;
     private EditText inputIntValue;
     private LinearLayout intArea;
@@ -57,6 +73,10 @@ public class DialogHistory extends AppCompatDialogFragment {
 
     }
 
+    public void setImage(Bitmap bitmap, byte[] byteImage){
+        image.setImageBitmap(bitmap);
+        this.imageByte = byteImage;
+    }
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
@@ -65,13 +85,19 @@ public class DialogHistory extends AppCompatDialogFragment {
         measureTitle = view.findViewById(R.id.measure_title);
         measureDate = view.findViewById(R.id.measure_date);
         typeName = view.findViewById(R.id.type_name);
+        intValUnitName = view.findViewById(R.id.int_value_unit_name);
         image = view.findViewById(R.id.image_src);
         inputIntValue = view.findViewById(R.id.int_value_edit);
         intArea = view.findViewById(R.id.int_area);
         imageArea = view.findViewById(R.id.image_area);
+        btTakePic = view.findViewById(R.id.takepic);
+        btFindFile = view.findViewById(R.id.findfile);
 
         intArea.setVisibility(View.GONE);
         imageArea.setVisibility(View.GONE);
+
+        //setListener
+        setListener();
 
         goalManager = new GoalManager(getContext());
 
@@ -83,6 +109,7 @@ public class DialogHistory extends AppCompatDialogFragment {
 
             measureTitle.setText(measure.getMeasureTitle());
             measureDate.setText(targetMeasureDate);
+            intValUnitName.setText(measure.getIntUnitName() != null && measure.getIntUnitName().isEmpty() == false ? measure.getIntUnitName() : "-");
             typeName.setText(measure.getMeasureType());
             type = measure.getMeasureType();
             if(type.equals("int")){
@@ -91,13 +118,26 @@ public class DialogHistory extends AppCompatDialogFragment {
                 imageArea.setVisibility(View.VISIBLE);
             }
 
-            //history
-
-
-
         }catch(Exception e){
             measureId = 0;
             targetMeasureDate = null;
+        }
+
+        //historyId exists, then get hisytory Data
+        MeasureHistory history = null;
+        try{
+            historyId = getArguments().getInt("historyId");
+            if(historyId > 0){
+                history = goalManager.getMeasureHistoryById(historyId);
+                inputIntValue.setText(String.valueOf(history.getMeasureIntValue()));
+                byte[] tmpImg = history.getMeasureImageValue();
+                if(tmpImg != null && tmpImg.length > 0){
+                    image.setImageBitmap(BitmapFactory.decodeByteArray(tmpImg, 0, tmpImg.length));
+                }
+
+            }
+        }catch (Exception e){
+            historyId = 0;
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -130,20 +170,37 @@ public class DialogHistory extends AppCompatDialogFragment {
                 error = errorBuilder.toString();
                 if(error.isEmpty()){
 
+                    GoalManager goalManager = new GoalManager(getContext());
+
                     long resultId = 0;
 
-                    //action
-                    MeasureHistory history = new MeasureHistory();
-                    history.setParentMeasureId(measureId);
-                    history.setMeasureDate(targetMeasureDate);
-                    if(type.equals("int")){
-                        history.setMeasureIntValue(Integer.parseInt(inputIntValue.getText().toString()));
+                    if(historyId > 0){
+
+                        //action
+                        MeasureHistory history = goalManager.getMeasureHistoryById(historyId);
+                        if(type.equals("int")){
+                            history.setMeasureIntValue(Integer.parseInt(inputIntValue.getText().toString()));
+                        }else{
+                            history.setMeasureImageValue(imageByte);
+                        }
+
+                        resultId = goalManager.updateMeasureHistory(history);
+
                     }else{
-                        history.setMeasureImageValue(imageByte);
+
+                        //action
+                        MeasureHistory history = new MeasureHistory();
+                        history.setParentMeasureId(measureId);
+                        history.setMeasureDate(targetMeasureDate);
+                        if(type.equals("int")){
+                            history.setMeasureIntValue(Integer.parseInt(inputIntValue.getText().toString()));
+                        }else{
+                            history.setMeasureImageValue(imageByte);
+                        }
+                        resultId = goalManager.addMeasureHistory(history);
+
                     }
 
-                    GoalManager goalManager = new GoalManager(getContext());
-                    resultId = goalManager.addMeasureHistory(history);
 
                     if(resultId > 0){
 
@@ -159,4 +216,35 @@ public class DialogHistory extends AppCompatDialogFragment {
         Dialog dialog = builder.create();
         return dialog;
     }
+
+    private void setListener(){
+
+        btFindFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //take photo --https://akira-watson.com/android/camera-intent.html
+                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+
+                //image file directory
+                File picDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                String path = picDirectory.getPath();
+
+                //uri
+                Uri data = Uri.parse(path);
+                photoPickerIntent.setDataAndType(data, "image/*");
+                getActivity().startActivityForResult(photoPickerIntent, RESULT_PICK_IMAGE_FROM_FRAGMENT);
+            }
+        });
+
+        btTakePic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //take photo
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                getActivity().startActivityForResult(intent, RESULT_CAMERA_FROM_FRAGMENT);
+            }
+        });
+
+    }
+
 }

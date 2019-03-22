@@ -66,7 +66,6 @@ public class MainGoalListActivity extends AppCompatActivity
             setEmptyPage();
         }
 
-
     }
 
     private void setEmptyPage(){

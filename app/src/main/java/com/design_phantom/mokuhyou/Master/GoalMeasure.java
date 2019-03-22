@@ -7,8 +7,8 @@ public class GoalMeasure {
     private int parentGoalId;
     private String measureType;
     private int measureIntValue;
+    private String intUnitName;
     private byte[] measureImageValue;
-    private String measureDate;
     private String createdate;
     private String updatedate;
 
@@ -60,13 +60,6 @@ public class GoalMeasure {
         this.updatedate = updatedate;
     }
 
-    public String getMeasureDate() {
-        return measureDate;
-    }
-
-    public void setMeasureDate(String measureDate) {
-        this.measureDate = measureDate;
-    }
 
     public int getMeasureIntValue() {
         return measureIntValue;
@@ -82,5 +75,13 @@ public class GoalMeasure {
 
     public void setMeasureImageValue(byte[] measureImageValue) {
         this.measureImageValue = measureImageValue;
+    }
+
+    public String getIntUnitName() {
+        return intUnitName;
+    }
+
+    public void setIntUnitName(String intUnitName) {
+        this.intUnitName = intUnitName;
     }
 }

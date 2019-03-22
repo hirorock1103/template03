@@ -55,6 +55,17 @@
                 app:layout_constraintBottom_toBottomOf="@id/value_title"
                 />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/int_value_unit_name"
+                android:text=""
+                android:layout_marginLeft="10dp"
+                app:layout_constraintLeft_toRightOf="@id/int_value"
+                app:layout_constraintTop_toTopOf="@id/int_value"
+                app:layout_constraintBottom_toBottomOf="@id/int_value"
+                />
+
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"

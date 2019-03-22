@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.text.Html;
 import android.util.Log;
@@ -11,6 +13,10 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -194,5 +200,81 @@ public class Common {
         byte[] bmparr = byteBuffer.array();
         return bmparr;
     }
+
+    public static byte[] convertBitMapToByteArray2(Bitmap resizeImage){
+        byte[] byteImage = null;
+        //bitmapをblob保存用に変換
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        resizeImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byteImage = stream.toByteArray();
+        try {
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return byteImage;
+    }
+
+    public static byte[] getImageByteFromUri(Context context, Uri imageUri, int picwidth){
+
+        byte[] byteImage = null;
+
+        InputStream inputStream;
+        BitmapFactory.Options imageOptions;
+
+        try{
+
+            inputStream = context.getContentResolver().openInputStream(imageUri);
+
+            //画像サイズ情報
+            imageOptions = new BitmapFactory.Options();
+            imageOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(inputStream,null,imageOptions);
+            inputStream.close();
+
+            //再度読み込み
+            inputStream = context.getContentResolver().openInputStream(imageUri);
+            int width = imageOptions.outWidth;
+
+            int p = 1;
+            while(width > picwidth){
+                //縮小率を決める
+                p *= 2;
+                width /= p;
+            }
+
+            Bitmap imageBitmap;
+            if(p > 1){
+                //縮小
+                imageOptions = new BitmapFactory.Options();
+                imageOptions.inSampleSize = p;
+                imageBitmap = BitmapFactory.decodeStream(inputStream, null,imageOptions);
+
+            }else{
+                //等倍
+                imageBitmap = BitmapFactory.decodeStream(inputStream, null,null);
+            }
+
+            inputStream.close();
+
+            //bitmapをblob保存用に変換
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byteImage = stream.toByteArray();
+            stream.close();
+
+        }catch (FileNotFoundException e){
+            Common.log(e.getMessage());
+
+        }catch (IOException e){
+            Common.log(e.getMessage());
+        }
+
+        return byteImage;
+
+    }
+
+
 }
 

@@ -84,12 +84,27 @@ public class DialogDeleteConfirm extends AppCompatDialogFragment {
 
                             int resultid = 0;
 
+                            GoalManager manager = new GoalManager(getContext());
+
                             switch (dataType){
 
                                 case "goal" :
                                     //処理
-                                    GoalManager manager = new GoalManager(getContext());
                                     manager.deleteGoal(id);
+                                    resultid = 1;
+
+                                    break;
+
+                                case "history" :
+                                    //処理
+                                    manager.deleteHistory(id);
+                                    resultid = 1;
+
+                                    break;
+
+                                case "basicMeasure" :
+                                    //処理
+                                    manager.deleteBasicMeasure(id);
                                     resultid = 1;
 
                                     break;

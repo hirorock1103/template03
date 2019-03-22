@@ -16,6 +16,7 @@
     <string name="comment3">測定日</string>
     <string name="comment5"></string>
     <string name="comment6">測定する値:</string>
+    <string name="comment7">成果</string>
 
     <!--dialog title-->
     <string name="dialog_title1">削除Dialog</string>

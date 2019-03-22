@@ -1,17 +1,24 @@
 package com.design_phantom.mokuhyou;
 
+import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.LinearGradient;
 import android.media.Image;
+import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Layout;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -23,21 +30,33 @@ import android.widget.TextView;
 
 import com.design_phantom.mokuhyou.Common.Common;
 import com.design_phantom.mokuhyou.DB.GoalManager;
+import com.design_phantom.mokuhyou.Dialog.DatePickDialog;
 import com.design_phantom.mokuhyou.Dialog.DialogBasicMeasure;
+import com.design_phantom.mokuhyou.Dialog.DialogDeleteConfirm;
 import com.design_phantom.mokuhyou.Dialog.DialogHistory;
 import com.design_phantom.mokuhyou.Master.Goal;
 import com.design_phantom.mokuhyou.Master.GoalMeasure;
 import com.design_phantom.mokuhyou.Master.MeasureHistory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.List;
 
 public class MainGoalDetailActivity extends AppCompatActivity
 implements DialogBasicMeasure.DialogBasicMeasureListener,
-        DialogHistory.DialogHistoryListener
+        DialogHistory.DialogHistoryListener,
+        DatePickDialog.DatePickResultListener,
+        DialogDeleteConfirm.DialogDeleteNoticeListener
 {
 
+    //static value
+    private final static int IMAGE_WIDTH = 900;//pic image limit width
+
+    //basic information
     private int goalId;
     private GoalManager goalManager;
 
@@ -84,7 +103,7 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
             @Override
             public void onScrollChanged() {
                 int scrollY = leftScroll.getScrollY(); //for verticalScrollView
-                Common.log("scrollY" + scrollY);
+                //Common.log("scrollY" + scrollY);
                 rightScroll.smoothScrollTo(0,scrollY);
             }
         });
@@ -133,6 +152,7 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
                 DialogBasicMeasure basicMeasure = new DialogBasicMeasure();
                 Bundle bundle = new Bundle();
                 bundle.putInt("goalId",goalId);
+                bundle.putString("target",startDate.getText().toString());
                 basicMeasure.setArguments(bundle);
                 basicMeasure.show(getSupportFragmentManager(), "dialog");
             }
@@ -141,6 +161,29 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
             @Override
             public void onClick(View v) {
                 //Snackbar.make(v, "createNewRecord", Snackbar.LENGTH_SHORT).show();
+
+            }
+        });
+
+        targetDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatePickDialog datePickDialog = new DatePickDialog();
+                Bundle bundle = new Bundle();
+                bundle.putString("target", "targetDate");
+                datePickDialog.setArguments(bundle);
+                datePickDialog.show(getSupportFragmentManager(), "dateDialog");
+            }
+        });
+
+        startDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatePickDialog datePickDialog = new DatePickDialog();
+                Bundle bundle = new Bundle();
+                bundle.putString("target", "startDate");
+                datePickDialog.setArguments(bundle);
+                datePickDialog.show(getSupportFragmentManager(), "dateDialog");
             }
         });
 
@@ -150,7 +193,7 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
     private void setDate(){
         Goal goal = goalManager.getListById(goalId);
         title.setText(goal.getGoalTitle());
-        startDate.setText(goal.getGoalMeasureDate() == null || goal.getGoalMeasureDate().isEmpty() ? "-" : goal.getGoalMeasureDate());
+        startDate.setText(goal.getGoalMeasureDate() == null || goal.getGoalMeasureDate().isEmpty() ? Common.formatDate(new Date(), Common.DATE_FORMAT_SAMPLE_1) : goal.getGoalMeasureDate());
     }
 
     private void setScrollViewData(){
@@ -162,18 +205,27 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
         final GoalMeasure[] measures = list.toArray(new GoalMeasure[list.size()]);
 
         for(int i = 0; i < measures.length; i++){
+
             View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_row_cmp01, null);
+            ConstraintLayout beforeLayout = view.findViewById(R.id.layout_row);
             TextView title = view.findViewById(R.id.title);
+            TextView intUnitName = view.findViewById(R.id.int_value_unit_name);
             title.setText(measures[i].getMeasureTitle());
 
             ImageView imageval = view.findViewById(R.id.image_value);
             TextView intval = view.findViewById(R.id.int_value);
 
             if(measures[i].getMeasureType() != null && measures[i].getMeasureType().equals("image")){
-                //imageval.setImageBitmap(BitmapFactory.decodeByteArray(measures[i].getMeasureImageValue(), 0, measures[i].getMeasureImageValue().length));
-                imageval.setImageBitmap( BitmapFactory.decodeResource(getResources(), R.drawable.m1));
+                byte[] tmpImg = measures[i].getMeasureImageValue();
+                //Common.log("image:" + tmpImg.length);
+                if(tmpImg != null && tmpImg.length > 0){
+                    imageval.setImageBitmap(BitmapFactory.decodeByteArray(tmpImg, 0, tmpImg.length));
+
+                }
+
             }else if(measures[i].getMeasureType().equals("int")){
                 intval.setText(String.valueOf(measures[i].getMeasureIntValue()));
+                intUnitName.setText(measures[i].getIntUnitName());
             }
             leftScrollContents.addView(view);
 
@@ -186,11 +238,48 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
             }else{
                 history = historyList.get(0);
             }
+            final int measureId = measures[i].getMeasureId();
+            beforeLayout.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener(){
+
+                @Override
+                public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+                    menu.setHeaderTitle("--Header beforetitle");
+                    menu.add("--edit").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            //edut
+                            DialogBasicMeasure basicMeasure = new DialogBasicMeasure();
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("measureId",measureId);
+                            bundle.putInt("goalId",goalId);
+                            bundle.putString("target", startDate.getText().toString());
+                            basicMeasure.setArguments(bundle);
+                            basicMeasure.show(getSupportFragmentManager(), "dialog");
+                            return true;
+                        }
+                    });
+                    menu.add("--delete").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            //delete
+                            DialogDeleteConfirm deleteConfirm = new DialogDeleteConfirm();
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("id", measureId);
+                            bundle.putString("dataType","basicMeasure");
+                            deleteConfirm.setArguments(bundle);
+                            deleteConfirm.show(getSupportFragmentManager(), "dialog");
+                            return true;
+                        }
+                    });
+                }
+            });
 
             View view2;
             if(history != null){
                 view2 = LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_row_cmp02, null);
+                ConstraintLayout layout = view2.findViewById(R.id.layout_row);
                 TextView setValue  = view2.findViewById(R.id.int_value);
+                TextView historyIntValueUnitName  = view2.findViewById(R.id.int_value_unit_name);
                 ImageView imageValue  = view2.findViewById(R.id.image_value);
                 ImageView trend = view2.findViewById(R.id.trend);
 
@@ -206,19 +295,60 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
                         }
                         trend.setImageBitmap(BitmapFactory.decodeResource(getResources(), resorceId));
                         setValue.setText(String.valueOf(history.getMeasureIntValue()));
-
+                        historyIntValueUnitName.setText(measures[i].getIntUnitName());
                         break;
 
                     case "image":
-                        imageValue.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.m1));
+                        byte[] tmpImage = history.getMeasureImageValue();
+                        if(tmpImage != null && tmpImage.length > 0){
+                            imageValue.setImageBitmap(BitmapFactory.decodeByteArray(tmpImage, 0 , tmpImage.length));
+                        }
+
                         break;
                 }
+                final int historyId = history.getHistoryId();
+                final String targetMeasureDate = targetDate.getText().toString();
+                layout.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+                    @Override
+                    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+                        menu.setHeaderTitle("--Header title");
+                        menu.add("--edit").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                //edit
+                                DialogHistory dialogHistory = new DialogHistory();
+                                Bundle bundle = new Bundle();
+                                bundle.putInt("measureId", measureId);
+                                bundle.putString("targetMeasureDate", targetMeasureDate);
+                                bundle.putInt("historyId", historyId);
+                                dialogHistory.setArguments(bundle);
+                                dialogHistory.show(getSupportFragmentManager(), "dialog");
+
+                                return true;
+                            }
+                        });
+
+                        menu.add("--delete").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                //delete
+                                DialogDeleteConfirm deleteConfirm = new DialogDeleteConfirm();
+                                Bundle bundle = new Bundle();
+                                bundle.putInt("id", historyId);
+                                bundle.putString("dataType","history");
+                                deleteConfirm.setArguments(bundle);
+                                deleteConfirm.show(getSupportFragmentManager(), "dialog");
+
+                                return true;
+                            }
+                        });
+                    }
+                });
 
 
             }else{
                 view2 = LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_row_comp3, null);
                 ConstraintLayout layout = view2.findViewById(R.id.layout_row);
-                final int measureId = measures[i].getMeasureId();
                 layout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -235,7 +365,6 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
 
             rightScrollContents.addView(view2);
         }
-
 
     }
 
@@ -269,4 +398,151 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
             Snackbar.make(view,error,Snackbar.LENGTH_LONG ).show();
         }
     }
+
+    @Override
+    public void deleteResultNotice(int order) {
+        View view = findViewById(android.R.id.content);
+        Snackbar.make(view,getString(R.string.success_msg2),Snackbar.LENGTH_LONG ).show();
+        setScrollViewData();
+        setDate();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+
+        if(requestCode == DialogHistory.RESULT_PICK_IMAGE_FROM_FRAGMENT || requestCode == DialogBasicMeasure.RESULT_PICK_IMAGE_FROM_FRAGMENT){
+
+            try{
+                byte[] byteImage;
+
+                Uri imageUri = data.getData();
+                byteImage = Common.getImageByteFromUri(getApplicationContext(), imageUri, IMAGE_WIDTH);
+
+                //確認用の画像
+                Bitmap img = BitmapFactory.decodeByteArray(byteImage, 0, byteImage.length);
+
+                //find fragment
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag("dialog");
+                if(fragment != null){
+
+                    switch (requestCode){
+                        case DialogHistory.RESULT_PICK_IMAGE_FROM_FRAGMENT:
+                            DialogHistory dialogHistory = (DialogHistory)fragment;
+                            dialogHistory.setImage(img,byteImage);
+                            break;
+                        case DialogBasicMeasure.RESULT_PICK_IMAGE_FROM_FRAGMENT:
+                            DialogBasicMeasure dialogBasicMeasure = (DialogBasicMeasure)fragment;
+                            dialogBasicMeasure.setImage(img,byteImage);
+                            break;
+                    }
+
+                }
+            }catch (Exception e){
+                Common.log(e.getMessage());
+            }
+
+        }
+
+        if(requestCode == DialogHistory.RESULT_CAMERA_FROM_FRAGMENT || requestCode == DialogBasicMeasure.RESULT_CAMERA_FROM_FRAGMENT){
+
+            // dataから画像を取り出す
+            try{
+                if(data.getExtras() != null){
+
+                    Bitmap bitmap = (Bitmap)data.getExtras().get("data");
+
+                    int width = bitmap.getWidth();
+                    int height = bitmap.getHeight();
+
+                    //設定された幅になるまで画像を縮小する
+                    int p = 1;
+
+                    while(width > IMAGE_WIDTH){
+                        //縮小率を決める
+                        p *= 2;
+                        width /= p;
+                    }
+
+
+                    Bitmap resizeImage;
+                    if(p > 1){
+                        resizeImage = Bitmap.createScaledBitmap(bitmap,(int)(width/p),(int)(height/p),true);
+                    }else{
+                        resizeImage = bitmap;
+                    }
+
+                    byte[] byteImage = Common.convertBitMapToByteArray2(resizeImage);
+
+                    //find fragment
+                    Fragment fragment = getSupportFragmentManager().findFragmentByTag("dialog");
+                    if(fragment != null){
+
+                        switch (requestCode){
+                            case DialogHistory.RESULT_CAMERA_FROM_FRAGMENT:
+                                DialogHistory dialogHistory = (DialogHistory)fragment;
+                                dialogHistory.setImage(bitmap,byteImage);
+                                break;
+                            case DialogBasicMeasure.RESULT_CAMERA_FROM_FRAGMENT:
+                                DialogBasicMeasure dialogBasicMeasure = (DialogBasicMeasure)fragment;
+                                dialogBasicMeasure.setImage(bitmap,byteImage);
+                                break;
+                        }
+
+                    }
+
+                }
+            }catch (Exception e){
+                Common.log(e.getMessage());
+            }
+
+
+
+        }
+
+
+    }
+
+    @Override
+    public void datePickResultNotice(String dateStr, String target) {
+
+        if(target != null && target.isEmpty() == false){
+
+            View view = findViewById(android.R.id.content);
+
+            switch (target){
+
+                case "startDate":
+
+                    Date start1 = Common.getDateByStr(dateStr, Common.DATE_FORMAT_SAMPLE_1);
+                    startDate.setText(Common.formatDate(start1, Common.DATE_FORMAT_SAMPLE_1));
+
+                    break;
+
+                case "targetDate":
+                    //Snackbar.make(v, "before", Snackbar.LENGTH_SHORT).show();
+                    Date nextDate = Common.addDateFromTargetDate(dateStr, Common.DATE_FORMAT_SAMPLE_1, "DAY", -1);
+                    //check if nextDate is bellow startdate
+                    Date start2 = Common.getDateByStr(startDate.getText().toString(), Common.DATE_FORMAT_SAMPLE_1);
+
+                    if(start2.getTime() > nextDate.getTime()) {
+                        Snackbar.make(view, "--error nextDate is bellow startdate not allowed", Snackbar.LENGTH_SHORT).show();
+                    }else{
+                        targetDate.setText(dateStr);
+                        setScrollViewData();
+                        Snackbar.make(view, "--datePickResultNotice Change date", Snackbar.LENGTH_SHORT).show();
+                    }
+                    break;
+
+            }
+
+
+        }
+
+
+
+    }
+
+
 }
+
+

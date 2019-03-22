@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class MyDbHelper extends SQLiteOpenHelper {
 
-    private final static int DBVERSION = 2;
+    private final static int DBVERSION = 4;
     private final static String DBNAME = "Mokuhyou.db";
 
     protected final static String TABLE_NAME = "Member";
@@ -31,8 +31,8 @@ public class MyDbHelper extends SQLiteOpenHelper {
     protected final static String MEASURE_COLUMN_PARENT_ID = "goal_id";
     protected final static String MEASURE_COLUMN_TYPE = "measure_type";
     protected final static String MEASURE_COLUMN_INT_VALUE = "measure_int_value";
+    protected final static String MEASURE_COLUMN_INT_UNIT_NAME = "measure_int_unit_name";
     protected final static String MEASURE_COLUMN_IMAGE_VALUE = "measure_image_value";
-    protected final static String MEASURE_COLUMN_MEASURE_DATE = "measure_date";
     protected final static String MEASURE_COLUMN_CREATEDATE = "measure_createdate";
     protected final static String MEASURE_COLUMN_UPDATEDATE = "measure_updatedate";
 
@@ -81,8 +81,8 @@ public class MyDbHelper extends SQLiteOpenHelper {
                 MEASURE_COLUMN_PARENT_ID + " integer," +
                 MEASURE_COLUMN_TYPE + " text," +
                 MEASURE_COLUMN_INT_VALUE + " integer," +
+                MEASURE_COLUMN_INT_UNIT_NAME + " text," +
                 MEASURE_COLUMN_IMAGE_VALUE + " blob," +
-                MEASURE_COLUMN_MEASURE_DATE + " text," +
                 MEASURE_COLUMN_CREATEDATE + " text," +
                 MEASURE_COLUMN_UPDATEDATE + " text" +
                 ")" ;

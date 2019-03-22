@@ -138,9 +138,9 @@ public class GoalManager extends MyDbHelper {
 
         values.put(MEASURE_COLUMN_TITLE, measure.getMeasureTitle());
         values.put(MEASURE_COLUMN_PARENT_ID, measure.getParentGoalId());
-        values.put(MEASURE_COLUMN_MEASURE_DATE, measure.getMeasureDate());
         values.put(MEASURE_COLUMN_TYPE, measure.getMeasureType());
         values.put(MEASURE_COLUMN_INT_VALUE, measure.getMeasureIntValue());
+        values.put(MEASURE_COLUMN_INT_UNIT_NAME, measure.getIntUnitName());
         values.put(MEASURE_COLUMN_IMAGE_VALUE, measure.getMeasureImageValue());
         values.put(MEASURE_COLUMN_UPDATEDATE, Common.formatDate(new Date(), Common.DB_DATE_FORMAT));
         values.put(MEASURE_COLUMN_CREATEDATE, Common.formatDate(new Date(), Common.DB_DATE_FORMAT));
@@ -154,6 +154,33 @@ public class GoalManager extends MyDbHelper {
 
     }
 
+    //updateGoalMeasure
+    public long updateGoalMeasure(GoalMeasure measure){
+
+        long resultId = 0;
+
+        ContentValues values = new ContentValues();
+
+        values.put(MEASURE_COLUMN_TITLE, measure.getMeasureTitle());
+        values.put(MEASURE_COLUMN_PARENT_ID, measure.getParentGoalId());
+        values.put(MEASURE_COLUMN_TYPE, measure.getMeasureType());
+        values.put(MEASURE_COLUMN_INT_VALUE, measure.getMeasureIntValue());
+        values.put(MEASURE_COLUMN_INT_UNIT_NAME, measure.getIntUnitName());
+        values.put(MEASURE_COLUMN_IMAGE_VALUE, measure.getMeasureImageValue());
+        values.put(MEASURE_COLUMN_UPDATEDATE, Common.formatDate(new Date(), Common.DB_DATE_FORMAT));
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        String where = MEASURE_COLUMN_ID + " = ?";
+        String[] args = {String.valueOf(measure.getMeasureId())};
+
+        resultId = db.update(TABLE_MEASURE, values, where, args);
+
+        return resultId;
+
+    }
+
+
     //list
     public List<GoalMeasure> getMeasureByGoalId(int goalId){
 
@@ -161,7 +188,7 @@ public class GoalManager extends MyDbHelper {
 
         String query = "SELECT * FROM " + TABLE_MEASURE
                 + " WHERE " + MEASURE_COLUMN_PARENT_ID + " = " + goalId
-                + " ORDER BY " + MEASURE_COLUMN_ID + " DESC ";
+                + " ORDER BY " + MEASURE_COLUMN_ID + " ASC ";
         SQLiteDatabase db = getWritableDatabase();
         Cursor c = db.rawQuery(query, null);
 
@@ -176,8 +203,8 @@ public class GoalManager extends MyDbHelper {
             measure.setParentGoalId(c.getInt(c.getColumnIndex(MEASURE_COLUMN_PARENT_ID)));
             measure.setMeasureType(c.getString(c.getColumnIndex(MEASURE_COLUMN_TYPE)));
             measure.setMeasureIntValue(c.getInt(c.getColumnIndex(MEASURE_COLUMN_INT_VALUE)));
+            measure.setIntUnitName(c.getString(c.getColumnIndex(MEASURE_COLUMN_INT_UNIT_NAME)));
             measure.setMeasureImageValue(c.getBlob(c.getColumnIndex(MEASURE_COLUMN_IMAGE_VALUE)));
-            measure.setMeasureDate(c.getString(c.getColumnIndex(MEASURE_COLUMN_MEASURE_DATE)));
             measure.setUpdatedate(c.getString(c.getColumnIndex(MEASURE_COLUMN_UPDATEDATE)));
             measure.setCreatedate(c.getString(c.getColumnIndex(MEASURE_COLUMN_CREATEDATE)));
 
@@ -209,8 +236,8 @@ public class GoalManager extends MyDbHelper {
             measure.setParentGoalId(c.getInt(c.getColumnIndex(MEASURE_COLUMN_PARENT_ID)));
             measure.setMeasureType(c.getString(c.getColumnIndex(MEASURE_COLUMN_TYPE)));
             measure.setMeasureIntValue(c.getInt(c.getColumnIndex(MEASURE_COLUMN_INT_VALUE)));
+            measure.setIntUnitName(c.getString(c.getColumnIndex(MEASURE_COLUMN_INT_UNIT_NAME)));
             measure.setMeasureImageValue(c.getBlob(c.getColumnIndex(MEASURE_COLUMN_IMAGE_VALUE)));
-            measure.setMeasureDate(c.getString(c.getColumnIndex(MEASURE_COLUMN_MEASURE_DATE)));
             measure.setUpdatedate(c.getString(c.getColumnIndex(MEASURE_COLUMN_UPDATEDATE)));
             measure.setCreatedate(c.getString(c.getColumnIndex(MEASURE_COLUMN_CREATEDATE)));
 
@@ -247,6 +274,33 @@ public class GoalManager extends MyDbHelper {
 
     }
 
+    /**
+     * update measure History
+     */
+    public long updateMeasureHistory(MeasureHistory history){
+
+        long resultId = 0;
+
+        ContentValues values = new ContentValues();
+
+        values.put(HISTORY_COLUMN_PARENT_MEASURE_ID, history.getParentMeasureId());
+        values.put(HISTORY_COLUMN_MEASURE_DATE, history.getMeasureDate());
+        values.put(HISTORY_COLUMN_INT_VALUE, history.getMeasureIntValue());
+        values.put(HISTORY_COLUMN_IMAGE_VALUE, history.getMeasureImageValue());
+
+        values.put(HISTORY_COLUMN_CREATEDATE, Common.formatDate(new Date(), Common.DB_DATE_FORMAT));
+        values.put(HISTORY_COLUMN_UPDATEDATE, Common.formatDate(new Date(), Common.DB_DATE_FORMAT));
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        String where = HISTORY_COLUMN_ID + " = ?";
+        String[] args = {String.valueOf(history.getHistoryId())};
+
+        resultId = db.update(TABLE_MEASURE_HISTORY, values, where, args);
+
+        return resultId;
+
+    }
 
     //list -- 1 get by measureId, string date
     public List<MeasureHistory> getMeasureHistoryByMeasureId(int measureId, String targetDate){
@@ -289,4 +343,52 @@ public class GoalManager extends MyDbHelper {
 
     }
 
+    //deleteHistory
+
+    public void deleteHistory(int id){
+        String query = "DELETE FROM " + TABLE_MEASURE_HISTORY + " WHERE " + HISTORY_COLUMN_ID + " = " + id;
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL(query);
+    }
+
+    //getMeasureHistoryById
+    public MeasureHistory getMeasureHistoryById(int historyId){
+
+        MeasureHistory history = new MeasureHistory();
+
+        String query = "SELECT * FROM " + TABLE_MEASURE_HISTORY
+                + " WHERE " + HISTORY_COLUMN_ID + " = " + historyId ;
+
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor c = db.rawQuery(query, null);
+
+        c.moveToFirst();
+
+        while(!c.isAfterLast()){
+
+            history.setHistoryId(c.getInt(c.getColumnIndex(HISTORY_COLUMN_ID)));
+            history.setParentMeasureId(c.getInt(c.getColumnIndex(HISTORY_COLUMN_PARENT_MEASURE_ID)));
+            history.setMeasureDate(c.getString(c.getColumnIndex(HISTORY_COLUMN_MEASURE_DATE)));
+            history.setMeasureIntValue(c.getInt(c.getColumnIndex(HISTORY_COLUMN_INT_VALUE)));
+            history.setMeasureImageValue(c.getBlob(c.getColumnIndex(HISTORY_COLUMN_IMAGE_VALUE)));
+
+            history.setUpdatedate(c.getString(c.getColumnIndex(HISTORY_COLUMN_UPDATEDATE)));
+            history.setCreatedate(c.getString(c.getColumnIndex(HISTORY_COLUMN_CREATEDATE)));
+
+
+            c.moveToNext();
+        }
+
+        return history;
+
+    }
+
+
+    //deleteBasicMeasure
+
+    public void deleteBasicMeasure(int id){
+        String query = "DELETE FROM " + TABLE_MEASURE + " WHERE " + MEASURE_COLUMN_ID + " = " + id;
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL(query);
+    }
 }

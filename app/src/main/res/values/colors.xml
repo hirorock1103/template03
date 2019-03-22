@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="colorPrimary">#a1bcfa</color>
+    <color name="colorPrimaryDark">#7a76d6</color>
+    <color name="colorAccent">#d82b1b</color>
+    <color name="layoutColor">#FAFAFA</color>
+    <color name="colorRipple">#A9A9F5</color>
+    <!--
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="layoutColor">#FAFAFA</color>
     <color name="colorRipple">#A9A9F5</color>
+    -->
 </resources>
