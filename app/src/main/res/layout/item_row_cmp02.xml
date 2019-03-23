@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:layout_margin="5dp"
-                android:textSize="30sp"
+                android:textSize="18sp"
                 android:id="@+id/int_value"
                 app:layout_constraintLeft_toRightOf="@id/value_title"
                 app:layout_constraintTop_toTopOf="@id/value_title"

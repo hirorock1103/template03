@@ -1,32 +1,25 @@
 package com.design_phantom.mokuhyou;
 
-import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
-import android.media.Image;
+import android.media.MediaCodec;
 import android.net.Uri;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,6 +27,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.design_phantom.mokuhyou.Common.Common;
+import com.design_phantom.mokuhyou.Common.Media;
 import com.design_phantom.mokuhyou.DB.GoalManager;
 import com.design_phantom.mokuhyou.Dialog.DatePickDialog;
 import com.design_phantom.mokuhyou.Dialog.DialogBasicMeasure;
@@ -43,18 +37,7 @@ import com.design_phantom.mokuhyou.Master.Goal;
 import com.design_phantom.mokuhyou.Master.GoalMeasure;
 import com.design_phantom.mokuhyou.Master.MeasureHistory;
 
-import org.jcodec.api.SequenceEncoder;
-import org.jcodec.api.android.AndroidSequenceEncoder;
-import org.jcodec.common.io.NIOUtils;
-import org.jcodec.common.model.Rational;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.SeekableByteChannel;
 import java.util.Date;
 import java.util.List;
 
@@ -86,6 +69,8 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
     private ImageButton playmovie;
     private ImageView icNext;
     private ImageView icBefore;
+    private ImageButton btShowGoal;//confirm_goal
+    private ImageButton btShowToday;//today
     private LinearLayout createBasic;
     private LinearLayout createGoal;
 
@@ -113,6 +98,8 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
         createBasic = findViewById(R.id.create_basic);
         createGoal = findViewById(R.id.create_new_record);
         playmovie = findViewById(R.id.playmovie);
+        btShowGoal = findViewById(R.id.confirm_goal);
+        btShowToday = findViewById(R.id.today);
 
 
         leftScroll.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
@@ -226,9 +213,36 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
         playmovie.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //start movie with picture
 
 
+
+
+            }
+        });
+
+        btShowGoal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //goal date
+                Goal goal = goalManager.getListById(goalId);
+                if(goal.getGoalDate() != null && goal.getGoalDate().isEmpty() == false){
+                    targetDate.setText(goal.getGoalDate());
+                    setScrollViewData();
+                    Snackbar.make(v, "--show goal date", Snackbar.LENGTH_SHORT).show();
+                }else{
+                    Snackbar.make(v, "--goal date is not defined!", Snackbar.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btShowToday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String today = Common.formatDate(new Date(), Common.DATE_FORMAT_SAMPLE_1);
+                targetDate.setText(today);
+                setScrollViewData();
+                Snackbar.make(v, "--show  date", Snackbar.LENGTH_SHORT).show();
             }
         });
 
@@ -436,6 +450,7 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
             }else{
                 view2 = LayoutInflater.from(getApplicationContext()).inflate(R.layout.item_row_comp3, null);
                 ConstraintLayout layout = view2.findViewById(R.id.layout_row);
+                ImageView imageValue = view2.findViewById(R.id.image_value);
                 layout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -448,6 +463,16 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
                         dialogHistory.show(getSupportFragmentManager(), "dialog");
                     }
                 });
+                switch (measures[i].getMeasureType()){
+                    case "int":
+                        int WC = LinearLayout.LayoutParams.WRAP_CONTENT;
+                        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(WC,WC);
+                        imageValue.setLayoutParams(params);
+                        imageValue.setVisibility(View.GONE);
+
+                        break;
+
+                }
             }
 
             rightScrollContents.addView(view2);
@@ -633,7 +658,7 @@ implements DialogBasicMeasure.DialogBasicMeasureListener,
 
                     if(start2.getTime() > nextDate.getTime()) {
                         Snackbar.make(view, "--error nextDate is bellow startdate not allowed", Snackbar.LENGTH_SHORT).show();
-                    }else if(nextDateAdd.getTime() > goalDatedate.getTime()){
+                    }else if(nextDate.getTime() > goalDatedate.getTime()){
                         Snackbar.make(view, "--error nextDate is over goalDate not allowed", Snackbar.LENGTH_SHORT).show();
                     }else{
                         targetDate.setText(dateStr);

@@ -13,7 +13,6 @@ import com.design_phantom.mokuhyou.Common.Common;
 public class MainActivity extends AppCompatActivity {
 
     private Button btMoveList;
-    private Button btAddGoal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,7 +20,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         btMoveList = findViewById(R.id.bt_move_list);
-        btAddGoal = findViewById(R.id.bt_add_goal);
 
         //set listener
         setListener();
@@ -39,12 +37,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        btAddGoal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //open dialog
-            }
-        });
 
     }
 

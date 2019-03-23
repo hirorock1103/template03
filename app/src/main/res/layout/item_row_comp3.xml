@@ -61,7 +61,7 @@
                 android:layout_width="50dp"
                 android:layout_height="100dp"
                 android:id="@+id/image_value"
-                android:src="@mipmap/ic_add_2"
+                android:src="@mipmap/ic_camera"
                 app:layout_constraintTop_toBottomOf="@id/int_value"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
